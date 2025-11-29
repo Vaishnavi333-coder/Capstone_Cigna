@@ -58,4 +58,22 @@ export class ClaimsService {
     }
     return this.repo.remove(claim);
   }
+
+  // Admin methods
+  async findAllForAdmin() {
+    return this.repo.find({ relations: ['policy', 'user'] });
+  }
+
+  async findOneForAdmin(id: number) {
+    const c = await this.repo.findOne({ where: { claimId: id }, relations: ['policy', 'user'] });
+    if (!c) throw new NotFoundException('Claim not found');
+    return c;
+  }
+
+  async updateStatusForAdmin(id: number, status: string) {
+    const claim = await this.findOneForAdmin(id);
+    // allow status transitions; admins can set any status
+    claim.status = status;
+    return this.repo.save(claim);
+  }
 }

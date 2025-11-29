@@ -60,4 +60,28 @@ export class PoliciesService {
     Object.assign(pol, dto);
     return this.repo.save(pol);
   }
+
+  // Admin methods
+  async findAllForAdmin() {
+    return this.repo.find({ relations: ['user', 'claims'] });
+  }
+
+  async findOneForAdmin(id: number) {
+    const pol = await this.repo.findOne({ where: { policyId: id }, relations: ['user', 'claims'] });
+    if (!pol) throw new NotFoundException('Policy not found');
+    return pol;
+  }
+
+  async createForAdmin(dto: AdminCreatePolicyDto) {
+    const user = await this.usersService.findById(dto.userId);
+    const pol = new Policy();
+    pol.user = user;
+    pol.insurer = dto.insurer;
+    pol.policyType = dto.policyType;
+    pol.premiumAmt = dto.premiumAmt;
+    pol.startDate = dto.startDate;
+    pol.endDate = dto.endDate;
+    pol.status = dto.status || 'Active';
+    return this.repo.save(pol);
+  }
 }

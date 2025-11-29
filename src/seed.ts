@@ -12,17 +12,30 @@ async function run() {
   const policyRepo = ds.getRepository(Policy);
   const claimRepo = ds.getRepository(Claim);
 
-  const existing = await userRepo.findOne({ where: { email: 'demo@insureconnect.com' } });
-  if (existing) {
-    console.log('Seed already executed');
-    process.exit(0);
+  // ensure demo user
+  const demo = await userRepo.findOne({ where: { email: 'demo@insureconnect.com' } });
+  let user: User;
+  if (!demo) {
+    user = new User();
+    user.email = 'demo@insureconnect.com';
+    user.password = await bcrypt.hash('password', 10);
+    user.name = 'Demo User';
+    user.role = 'user';
+    await userRepo.save(user);
+  } else {
+    user = demo;
   }
 
-  const user = new User();
-  user.email = 'demo@insureconnect.com';
-  user.password = await bcrypt.hash('password', 10);
-  user.name = 'Demo User';
-  await userRepo.save(user);
+  // ensure admin user exists
+  const adminExisting = await userRepo.findOne({ where: { email: 'admin@insureconnect.com' } });
+  if (!adminExisting) {
+    const admin = new User();
+    admin.email = 'admin@insureconnect.com';
+    admin.password = await bcrypt.hash('admin123', 10);
+    admin.name = 'InsureConnect Admin';
+    admin.role = 'admin';
+    await userRepo.save(admin);
+  }
 
   const p = new Policy();
   p.user = user;

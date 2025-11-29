@@ -15,6 +15,9 @@ export class User {
 
   @Column({ nullable: true })
   name: string;
+  
+  @Column({ default: 'user' })
+  role: string;
 
   @OneToMany(() => Policy, (policy) => policy.user)
   policies: Policy[];

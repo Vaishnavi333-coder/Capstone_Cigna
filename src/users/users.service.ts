@@ -18,6 +18,8 @@ export class UsersService {
     user.email = dto.email;
     user.name = dto.name;
     user.password = await bcrypt.hash(dto.password, 10);
+    // default role is 'user'
+    user.role = 'user';
     return await this.repo.save(user);
   }
 
@@ -29,5 +31,10 @@ export class UsersService {
     const user = await this.repo.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
     return user;
+  }
+
+  // Admin helper to list all users
+  async listAll(): Promise<User[]> {
+    return this.repo.find();
   }
 }

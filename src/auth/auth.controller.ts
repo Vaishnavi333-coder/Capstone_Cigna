@@ -1,4 +1,5 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Get, Request, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
@@ -12,7 +13,7 @@ export class AuthController {
   async register(@Body() dto: CreateUserDto) {
     const user = await this.usersService.create(dto);
     const token = await this.authService.login(user);
-    return { user: { id: user.id, email: user.email, name: user.name }, ...token };
+    return { user: { id: user.id, email: user.email, name: user.name, role: user.role }, ...token };
   }
 
   @Post('login')
@@ -22,6 +23,13 @@ export class AuthController {
       return { error: 'Invalid credentials' };
     }
     const token = await this.authService.login(user);
-    return { user: { id: user.id, email: user.email, name: user.name }, ...token };
+    return { user: { id: user.id, email: user.email, name: user.name, role: user.role }, ...token };
+  }
+
+  @Get('me')
+  @UseGuards(AuthGuard('jwt'))
+  async me(@Request() req) {
+    // req.user is set by JwtStrategy
+    return { user: { id: req.user.userId, email: req.user.email, role: req.user.role } };
   }
 }
